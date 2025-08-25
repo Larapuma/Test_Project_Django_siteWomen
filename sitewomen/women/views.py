@@ -1,0 +1,70 @@
+from django.urls import reverse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, Http404
+from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
+
+
+menu =[{'title':'О сайте','url_name':'about'},
+{'title':'Добавить статью','url_name':'addpage'},
+{'title':'Обратная связь','url_name':'contact'},
+{'title':'Войти','url_name':'login'},
+]
+data_db = [
+    {'id': 1, 'title': 'Анджелина Джоли', 'content': '''<h1>Анджелина Джоли</h1> (англ. Angelina Jolie[7], при рождении Войт (англ. Voight), ранее Джоли Питт (англ. Jolie Pitt); род. 4 июня 1975, Лос-Анджелес, Калифорния, США) — американская актриса кино, телевидения и озвучивания, кинорежиссёр, сценаристка, продюсер, фотомодель, посол доброй воли ООН.
+    Обладательница премии «Оскар», трёх премий «Золотой глобус» (первая актриса в истории, три года подряд выигравшая премию) и двух «Премий Гильдии киноактёров США».''',
+     'is_published': True},
+    {'id': 2, 'title': 'Марго Робби', 'content': 'Биография Марго Робби', 'is_published': False},
+    {'id': 3, 'title': 'Джулия Робертс', 'content': 'Биография Джулия Робертс', 'is_published': True},
+]
+def index(request: HttpRequest):
+    # t = render_to_string('women/index.html')
+    # return HttpResponse(t)
+    #эквивалентные строчки
+    data = {'title':"Главная страница",
+            'menu':menu,
+            "posts":data_db
+            }
+    return render(request,'women/index.html',context= data)
+
+def about(request: HttpRequest):
+
+    return render(request,'women/about.html',{'title':"О сайте","menu":menu})
+
+def login(request):
+    return HttpResponse("Авторизация")
+
+
+def contact(request):
+    return HttpResponse("Обратная связь")
+
+
+def addpage(request):
+    return HttpResponse("Добавление статьи")
+
+
+
+
+
+def show_post(request, post_id):
+    return HttpResponse(f"Отображение статьи с id = {post_id}")
+
+def page_not_found(request, exception):
+    return HttpResponseNotFound("<h1>Страница не найдена</h1>")
+
+
+
+def categories(request: HttpRequest, cat_id: int):
+    return HttpResponse(f"<h1>Статьи по категориям</h1><p>id:{cat_id}</p>")
+# Create your views here.
+def categories_by_slug(request: HttpRequest, cat_slug: str):
+    if request.POST: print(request.POST)
+    return HttpResponse(f"<h1>Статьи по категориям</h1><p>slug:{cat_slug}</p>")
+
+
+def archive(request, year):
+    if year>2025:
+        uri = reverse('cats',args=('music',))
+        return redirect('cats',"music")#адрес главной страницы
+    return HttpResponse(f"<h1>Архив по годам</h1><p >{year}</p>")
+
+
