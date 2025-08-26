@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 
-from .models import Women
+from .models import Women, Category, TagPost
 
 menu =[{'title':'О сайте','url_name':'about'},
 {'title':'Добавить статью','url_name':'addpage'},
@@ -18,9 +18,7 @@ data_db = [
     {'id': 3, 'title': 'Джулия Робертс', 'content': 'Биография Джулия Робертс', 'is_published': True},
 ]
 
-cats_db = [{'id':1,'name':"Актрисы"},
-           {'id':2,'name':"Певицы"},
-           {'id':3,'name':"Спортсменки"},]
+
 def index(request: HttpRequest):
     # t = render_to_string('women/index.html')
     # return HttpResponse(t)
@@ -84,10 +82,26 @@ def archive(request, year):
     return HttpResponse(f"<h1>Архив по годам</h1><p >{year}</p>")
 
 
-def show_category(request, cat_id):
-    data = {'title': "Отображение по категориям",
+def show_category(request, cat_slug):
+
+    category = get_object_or_404(Category,slug = cat_slug)
+    posts = Women.published.filter(cat_id=category.pk)
+
+    data = {'title': f"Рубрика:{category.name}",
             'menu': menu,
-            "posts": data_db,
-            'cat_selected': cat_id,
+            "posts": posts,
+            'cat_selected': category.pk,
             }
     return render(request,'women/index.html',context= data)
+
+
+def show_tag_postlist(request,tag_slug):
+    tag = get_object_or_404(TagPost,slug = tag_slug)
+    posts = tag.tags.filter(is_published = Women.Status.PUBLISHED)
+
+    data={'title': f"Тег:{tag.tag}",
+            'menu': menu,
+            "posts": posts,
+            'cat_selected': None,
+            }
+    return  render(request,'women/index.html',context=data)
