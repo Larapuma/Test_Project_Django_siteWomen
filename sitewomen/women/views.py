@@ -25,7 +25,7 @@ def index(request: HttpRequest):
     # t = render_to_string('women/index.html')
     # return HttpResponse(t)
     #эквивалентные строчки
-    posts = Women.objects.filter(is_published = 1)
+    posts = Women.published.all()
     data = {'title':"Главная страница",
             'menu':menu,
             "posts":posts,
