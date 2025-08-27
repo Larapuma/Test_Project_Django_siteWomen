@@ -1,6 +1,7 @@
 from django.db import models
 
 from django.db import models
+from django.db.models import OneToOneField
 from django.urls import reverse
 
 class PublishedManager(models.Manager):
@@ -19,6 +20,8 @@ class Women(models.Model):
     is_published = models.BooleanField(choices=Status.choices,default=Status.DRAFT)
     cat = models.ForeignKey('Category', on_delete=models.PROTECT, related_name="posts")
     tags = models.ManyToManyField("TagPost",blank=True, related_name='tags')
+    husband = OneToOneField("Husband",on_delete=models.SET_NULL,null=True,blank=True,related_name="wuman")
+
 
 
     objects = models.Manager()
@@ -59,3 +62,10 @@ class TagPost(models.Model):
 
     def get_absolute_url(self):
         return reverse("tag",kwargs = {'tag_slug':self.slug})
+
+class Husband(models.Model):
+    name = models.CharField(max_length=100)
+    age = models.IntegerField(null = True)
+
+    def __ster(self):
+        return self.name
