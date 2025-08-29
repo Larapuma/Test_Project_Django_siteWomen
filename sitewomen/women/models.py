@@ -1,7 +1,7 @@
 from django.db import models
 
 from django.db import models
-from django.db.models import OneToOneField
+from django.db.models import OneToOneField, Q
 from django.urls import reverse
 
 class PublishedManager(models.Manager):
@@ -12,15 +12,15 @@ class Women(models.Model):
     class Status(models.IntegerChoices):
         DRAFT = 0,'Черновик' #Черновик
         PUBLISHED = 1, 'Опубликовано' # Опубликовано
-    title = models.CharField(max_length=255)#поле типа Varchar в таблице women
-    slug = models.SlugField(max_length=255,unique= True,db_index = True)
-    content = models.TextField(blank=True)#Позволяет не заносить туда что-то с самого начала, чтобы можно было добавить и сразу и потом
-    time_create = models.DateTimeField(auto_now_add=True)#Автоматически заполняет это поле в момент добавления этой записи(заполняет датой занесения)
-    time_update = models.DateTimeField(auto_now=True)#Это поле меняется каждое новое обновление
-    is_published = models.BooleanField(choices=Status.choices,default=Status.DRAFT)
-    cat = models.ForeignKey('Category', on_delete=models.PROTECT, related_name="posts")
-    tags = models.ManyToManyField("TagPost",blank=True, related_name='tags')
-    husband = OneToOneField("Husband",on_delete=models.SET_NULL,null=True,blank=True,related_name="wuman")
+    title = models.CharField(max_length=255, verbose_name='Заголовок')#поле типа Varchar в таблице women
+    slug = models.SlugField(max_length=255,unique= True,db_index = True,verbose_name='Slug')
+    content = models.TextField(blank=True,verbose_name='Текст статьи')#Позволяет не заносить туда что-то с самого начала, чтобы можно было добавить и сразу и потом
+    time_create = models.DateTimeField(auto_now_add=True,verbose_name='Время создания')#Автоматически заполняет это поле в момент добавления этой записи(заполняет датой занесения)
+    time_update = models.DateTimeField(auto_now=True,verbose_name='Время изменения')#Это поле меняется каждое новое обновление
+    is_published = models.BooleanField(choices=tuple(map(lambda x: (bool(x[0]),x[1]),Status.choices)),default=Status.DRAFT, verbose_name='Статус')
+    cat = models.ForeignKey('Category', on_delete=models.PROTECT, related_name="posts",verbose_name='Категории')
+    tags = models.ManyToManyField("TagPost",blank=True, related_name='tags',verbose_name='Теги')
+    husband = OneToOneField("Husband",on_delete=models.SET_NULL,null=True,blank=True,related_name="wuman", verbose_name='Муж')
 
 
 
@@ -38,14 +38,20 @@ class Women(models.Model):
 
 
     class Meta:
+        verbose_name = "Известные женщины"
+        verbose_name_plural = "Известные женщины"
         ordering = ['-time_create']
         indexes = [
             models.Index(fields=['-time_create'])
         ]
 
+
 class Category(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255,verbose_name = "Категория")
     slug = models.SlugField(max_length=255,unique=True,db_index=True)
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
 
     def __str__(self):
         return self.name
@@ -66,6 +72,7 @@ class TagPost(models.Model):
 class Husband(models.Model):
     name = models.CharField(max_length=100)
     age = models.IntegerField(null = True)
+    m_count = models.IntegerField(blank=True,default=0)
 
-    def __ster(self):
+    def __str__(self):
         return self.name
