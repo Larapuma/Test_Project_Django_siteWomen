@@ -3,8 +3,30 @@ from .models import Women, Category
 
 
 # Register your models here.
+class MarriedFilet(admin.SimpleListFilter):
+    title = "Статус Женщин"
+    parameter_name = "status"
+    def lookups(self, request, model_admin):
+        return [
+            ('married',"Замужем"),
+            ('single','Не замужем')
+        ]
+    def queryset(self, request, queryset):
+        if self.value()=='married':
+            return queryset.filter(husband__isnull=False)
+        return queryset.filter(husband__isnull=True)
+
+
 @admin.register(Women)
 class WomenAdmin(admin.ModelAdmin):
+
+
+    fields = ['title','content','cat','slug','tags']
+    #exclude = ['tags','is_published']
+    # readonly_fields = ['slug']
+    prepopulated_fields = {"slug":('title',)}#создаёт автоматически слаг по названию, даже русские буквы преобразует в латиницу
+    filter_horizontal = ['tags']#более удобная менюшка для выбора тегов(то есть для отображение таблиц многие ко многим)
+    # либо сделать(функционал тот же) filter_vertical
     list_display = ("title","time_create",'is_published','cat',"breif_info")
     list_display_links = ('title',)
     ordering = ['time_create','title']
@@ -12,7 +34,7 @@ class WomenAdmin(admin.ModelAdmin):
     list_per_page = 3
     actions = ['set_published','set_draft']
     search_fields = ['title','cat__name']
-    list_filter = ["cat__name","is_published"]
+    list_filter = [MarriedFilet,"cat__name","is_published"]
 
     @admin.display(description="Краткое описание",ordering='content')
     def breif_info(self,women: Women):
