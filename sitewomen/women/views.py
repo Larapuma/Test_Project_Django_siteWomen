@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 
 from .forms import AddPostForm, UploadFIleForm
-from .models import Women, Category, TagPost
+from .models import Women, Category, TagPost, UploadFiles
 
 menu =[{'title':'О сайте','url_name':'about'},
 {'title':'Добавить статью','url_name':'addpage'},
@@ -24,17 +24,18 @@ def index(request: HttpRequest):
             'cat_selected': 0,
             }
     return render(request,'women/index.html',context = data)
-def handle_uploaded_file(file):
-    with open(f"uploads/{file.name}","wb+") as destination:
-        for chunk in file.chunks():
-            destination.write(chunk)
+# def handle_uploaded_file(file):
+#     with open(f"uploads/{file.name}","wb+") as destination:
+#         for chunk in file.chunks():
+#             destination.write(chunk)
 def about(request: HttpRequest):
     if request.method =="POST":
 
         form = UploadFIleForm(request.POST,request.FILES)
         if form.is_valid():
-            handle_uploaded_file(form.cleaned_data['file'])
-
+            # handle_uploaded_file(form.cleaned_data['file'])
+            fp = UploadFiles(file = form.cleaned_data['file'])
+            fp.save()
     else:
         form = UploadFIleForm()
 
@@ -51,7 +52,7 @@ def contact(request):
 
 def addpage(request):
     if request.method == "POST":
-        form = AddPostForm(request.POST)
+        form = AddPostForm(request.POST, request.FILES)
         if form.is_valid():
             # print(form.cleaned_data)
             # try:

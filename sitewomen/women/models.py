@@ -30,6 +30,7 @@ class Women(models.Model):
                                MinLengthValidator(5,message='минимум 5 символов'),
                                MaxLengthValidator(100,message='максимум 100 символов'),
                            ])
+    photo = models.ImageField(upload_to='photos/%Y/%m/%d/',default=None,blank=True,null=True, verbose_name="Фото")#проценты и буквы означают добавлять год/месяц/дату с названием файла
     content = models.TextField(blank=True,verbose_name='Текст статьи')#Позволяет не заносить туда что-то с самого начала, чтобы можно было добавить и сразу и потом
     time_create = models.DateTimeField(auto_now_add=True,verbose_name='Время создания')#Автоматически заполняет это поле в момент добавления этой записи(заполняет датой занесения)
     time_update = models.DateTimeField(auto_now=True,verbose_name='Время изменения')#Это поле меняется каждое новое обновление
@@ -99,3 +100,5 @@ class Husband(models.Model):
         return self.name
 
 
+class UploadFiles(models.Model):
+    file = models.FileField(upload_to='uploads_model')
