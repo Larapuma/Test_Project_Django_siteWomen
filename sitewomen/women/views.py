@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 
-from .forms import AddPostForm
+from .forms import AddPostForm, UploadFIleForm
 from .models import Women, Category, TagPost
 
 menu =[{'title':'О сайте','url_name':'about'},
@@ -24,10 +24,22 @@ def index(request: HttpRequest):
             'cat_selected': 0,
             }
     return render(request,'women/index.html',context = data)
-
+def handle_uploaded_file(file):
+    with open(f"uploads/{file.name}","wb+") as destination:
+        for chunk in file.chunks():
+            destination.write(chunk)
 def about(request: HttpRequest):
+    if request.method =="POST":
 
-    return render(request,'women/about.html',{'title':"О сайте","menu":menu})
+        form = UploadFIleForm(request.POST,request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(form.cleaned_data['file'])
+
+    else:
+        form = UploadFIleForm()
+
+    return render(request,'women/about.html',
+                  {'title':"О сайте","menu":menu,"form":form})
 
 def login(request):
     return HttpResponse("Авторизация")
@@ -42,11 +54,14 @@ def addpage(request):
         form = AddPostForm(request.POST)
         if form.is_valid():
             # print(form.cleaned_data)
-            try:
-                Women.objects.create(**form.cleaned_data)
-                return redirect('home')
-            except:
-                form.add_error(None, 'Ошибка добавления поста')
+            # try:
+            #     Women.objects.create(**form.cleaned_data)
+            #     return redirect('home')
+            # except:
+            #     form.add_error(None, 'Ошибка добавления поста') снизу эквивалентно тому, что выше, но это работает, тк форма наследуется от определённого класса(см сам класс)
+            print(form.cleaned_data)
+            form.save()
+            return redirect('home')
     else:
         form = AddPostForm()
 
@@ -87,7 +102,7 @@ def categories_by_slug(request: HttpRequest, cat_slug: str):
 
 def archive(request, year):
     if year>2025:
-        uri = reverse('cats',args=('music',))
+        url = reverse('cats',args=('music',))
         return redirect('cats',"music")#адрес главной страницы
     return HttpResponse(f"<h1>Архив по годам</h1><p >{year}</p>")
 
