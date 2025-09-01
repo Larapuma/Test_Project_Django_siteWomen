@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.utils.safestring import mark_safe
+
 from .models import Women, Category
 
 
@@ -21,13 +23,13 @@ class MarriedFilet(admin.SimpleListFilter):
 class WomenAdmin(admin.ModelAdmin):
 
 
-    fields = ['title','content','cat','slug','tags']
+    fields = ['title','content','photo','post_photo', 'cat','slug','tags']
     #exclude = ['tags','is_published']
-    # readonly_fields = ['slug']
+    readonly_fields = ['post_photo']
     prepopulated_fields = {"slug":('title',)}#создаёт автоматически слаг по названию, даже русские буквы преобразует в латиницу
     filter_horizontal = ['tags']#более удобная менюшка для выбора тегов(то есть для отображение таблиц многие ко многим)
     # либо сделать(функционал тот же) filter_vertical
-    list_display = ("title","time_create",'is_published','cat',"breif_info")
+    list_display = ("title",'post_photo',"time_create",'is_published','cat',)
     list_display_links = ('title',)
     ordering = ['time_create','title']
     list_editable = ("is_published",)
@@ -35,6 +37,13 @@ class WomenAdmin(admin.ModelAdmin):
     actions = ['set_published','set_draft']
     search_fields = ['title','cat__name']
     list_filter = [MarriedFilet,"cat__name","is_published"]
+    save_on_top = True
+
+    @admin.display(description="Изображение",ordering='content')
+    def post_photo(self,women:Women):
+        if women.photo:
+            return mark_safe(f"<img src='{women.photo.url}' width=50>")
+        return "Без фото"
 
     @admin.display(description="Краткое описание",ordering='content')
     def breif_info(self,women: Women):

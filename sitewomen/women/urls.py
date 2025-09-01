@@ -1,12 +1,14 @@
 from django.urls import path, re_path, register_converter
+from setuptools.depends import extract_constant
+
 from . import views,convertors
 register_converter(convertors.FourDigitYearConverter,"year4")
 urlpatterns = [
     #ПИСАТЬ КОВЕРТОРЫ НУЖНО В ПОРЯДКЕ УБЫВАНИЯ ЖЁТСКОСТИ ТИПИЗАЦИИ, ТО ЕСТЬ
     #ЕСЛИ ПОМЕНЯТЬ INT И SLUG, ТО ЕСТЬ СНАЧАЛА SLUG, ПОТОМ INT, ТОГДА ДО INT НИЧЕГО НЕ БУДЕТ ДОХОДИТЬ
-    path('',views.index, name='home' ),#http://127.0.0.1:8000
+    path('',views.WomenHome.as_view(), name='home' ),#http://127.0.0.1:8000
     path('about/',views.about, name = "about"),
-    path('addpage/',views.addpage,name='addpage'),
+    path('addpage/',views.AddPage.as_view(),name='addpage'),
     path('contact/',views.contact,name='contact'),
     path('login/',views.login,name='login'),
     path("post/<slug:post_slug>/",views.show_post, name = "post"),

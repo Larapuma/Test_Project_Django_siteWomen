@@ -2,6 +2,8 @@ from django.urls import reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
+from django.views import View
+from django.views.generic import TemplateView
 
 from .forms import AddPostForm, UploadFIleForm
 from .models import Women, Category, TagPost, UploadFiles
@@ -28,6 +30,24 @@ def index(request: HttpRequest):
 #     with open(f"uploads/{file.name}","wb+") as destination:
 #         for chunk in file.chunks():
 #             destination.write(chunk)
+
+class WomenHome(TemplateView):
+    template_name = 'women/index.html'
+    extra_context = {"title":"Главная страница сайта",
+            'menu':menu,
+            "posts":Women.published.all().select_related('cat'),
+            'cat_selected': 0,
+            }
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['title']="Главная страница"
+    #     context['menu'] = menu
+    #     context['title'] = Women.published.all().select_related('cat')
+    #     context['cat_selected'] = int(self.request.GET.get('cat_id',0))
+    #     return context
+
+
 def about(request: HttpRequest):
     if request.method =="POST":
 
@@ -50,8 +70,24 @@ def contact(request):
     return HttpResponse("Обратная связь")
 
 
-def addpage(request):
-    if request.method == "POST":
+# def addpage(request):
+
+
+
+
+
+
+class AddPage(View):
+    def get(self, request):
+        form = AddPostForm()
+        data = {'menu': menu,
+                'title': "Добавление статьи",
+                'form': form,
+                }
+        return render(request, 'women/addpage.html', data)
+
+
+    def post(self,request):
         form = AddPostForm(request.POST, request.FILES)
         if form.is_valid():
             # print(form.cleaned_data)
@@ -60,20 +96,14 @@ def addpage(request):
             #     return redirect('home')
             # except:
             #     form.add_error(None, 'Ошибка добавления поста') снизу эквивалентно тому, что выше, но это работает, тк форма наследуется от определённого класса(см сам класс)
-            print(form.cleaned_data)
+
             form.save()
             return redirect('home')
-    else:
-        form = AddPostForm()
-
-    data = {'menu':menu,
-            'title':"Добавление статьи",
-            'form':form,
-    }
-    return render(request,'women/addpage.html', data)
-
-
-
+        data = {'menu': menu,
+                'title': "Добавление статьи",
+                'form': form,
+                }
+        return render(request, 'women/addpage.html', data)
 
 
 def show_post(request, post_slug):
